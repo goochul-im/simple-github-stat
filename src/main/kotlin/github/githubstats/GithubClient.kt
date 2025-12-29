@@ -20,11 +20,22 @@ class GithubClient(private val githubRestClient: RestClient) {
     fun fetchRepositories(username: String): List<RestRepository> {
         return try {
             githubRestClient.get()
-                .uri("/users/{username}/repos?per_page=100&type=owner", username)
+                .uri("/users/{username}/repos?per_page=100&type=all", username)
                 .retrieve()
                 .body(Array<RestRepository>::class.java)?.toList() ?: emptyList()
         } catch (e: Exception) {
             emptyList()
+        }
+    }
+
+    fun fetchRepoLanguages(owner: String, repo: String): Map<String, Long> {
+        return try {
+            githubRestClient.get()
+                .uri("/repos/{owner}/{repo}/languages", owner, repo)
+                .retrieve()
+                .body(object : org.springframework.core.ParameterizedTypeReference<Map<String, Long>>() {}) ?: emptyMap()
+        } catch (e: Exception) {
+            emptyMap()
         }
     }
 
@@ -69,9 +80,15 @@ data class RestUserResponse(
 )
 
 data class RestRepository(
+    val name: String,
+    val owner: RestOwner,
     val stargazers_count: Int,
     val fork: Boolean,
     val language: String?
+)
+
+data class RestOwner(
+    val login: String
 )
 
 data class RestSearchResponse(

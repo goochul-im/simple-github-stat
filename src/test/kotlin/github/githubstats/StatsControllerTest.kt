@@ -29,7 +29,7 @@ class StatsControllerTest {
     fun `통계 요청 시 SVG를 반환해야 한다`() {
         // given
         val username = "testuser"
-        val stats = GithubStatsDto("Test User", 10, 20, 5, 2)
+        val stats = GithubStatsDto("Test User", 10, 20, 5, 2, emptyList())
         val svgContent = "<svg>...</svg>"
 
         `when`(statsService.getStats(username)).thenReturn(stats)

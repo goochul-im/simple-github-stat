@@ -22,10 +22,17 @@ class StatsServiceTest {
         // given
         val username = "testuser"
         val user = RestUserResponse("testuser", "Test User")
-        val repos = listOf(RestRepository(10, false), RestRepository(20, false))
+        val owner = RestOwner("testuser")
+        val repos = listOf(
+            RestRepository("repo1", owner, 10, false, "Kotlin"),
+            RestRepository("repo2", owner, 20, false, "Java")
+        )
         
         `when`(githubClient.fetchUser(username)).thenReturn(user)
         `when`(githubClient.fetchRepositories(username)).thenReturn(repos)
+        `when`(githubClient.fetchRepoLanguages("testuser", "repo1")).thenReturn(mapOf("Kotlin" to 1000L))
+        `when`(githubClient.fetchRepoLanguages("testuser", "repo2")).thenReturn(mapOf("Java" to 1000L))
+        
         `when`(githubClient.searchIssues("type:issue author:$username")).thenReturn(3)
         `when`(githubClient.searchIssues("type:pr author:$username")).thenReturn(5)
         `when`(githubClient.searchCommits("author:$username")).thenReturn(100)
@@ -39,5 +46,8 @@ class StatsServiceTest {
         assertThat(result.totalCommits).isEqualTo(100)
         assertThat(result.totalPRs).isEqualTo(5)
         assertThat(result.totalIssues).isEqualTo(3)
+        
+        assertThat(result.languages).hasSize(2)
+        assertThat(result.languages.map { it.name }).containsExactlyInAnyOrder("Kotlin", "Java")
     }
 }

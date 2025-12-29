@@ -19,7 +19,11 @@ class SvgGeneratorTest {
             totalStars = 100,
             totalCommits = 200,
             totalPRs = 50,
-            totalIssues = 10
+            totalIssues = 10,
+            languages = listOf(
+                LanguageStat("Kotlin", 50.0, "50%", "#A97BFF", 157.0, 0.0),
+                LanguageStat("Java", 50.0, "50%", "#b07219", 157.0, -157.0)
+            )
         )
 
         // when
@@ -35,5 +39,9 @@ class SvgGeneratorTest {
         assertThat(svg).contains("50")
         assertThat(svg).contains("Total Issues:")
         assertThat(svg).contains("10")
+        assertThat(svg).contains("Most Used Languages")
+        assertThat(svg).contains("Kotlin")
+        assertThat(svg).contains("50%")
+        assertThat(svg).contains("Java")
     }
 }

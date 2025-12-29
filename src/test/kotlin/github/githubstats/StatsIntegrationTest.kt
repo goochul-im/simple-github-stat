@@ -57,7 +57,8 @@ class StatsIntegrationTest {
         // given
         val username = "testuser"
         val userResponse = """{"login": "testuser", "name": "Test User"}"""
-        val reposResponse = """[{"stargazers_count": 10, "fork": false}]"""
+        val reposResponse = """[{"name": "repo1", "owner": {"login": "testuser"}, "stargazers_count": 10, "fork": false, "language": "Kotlin"}]"""
+        val repoLangResponse = """{"Kotlin": 1000}"""
         val issuesResponse = """{"total_count": 3}"""
         val prsResponse = """{"total_count": 5}"""
         val commitsResponse = """{"total_count": 100}"""
@@ -65,7 +66,7 @@ class StatsIntegrationTest {
         mockServer.expect(requestTo("https://api.github.com/users/$username"))
             .andRespond(withSuccess(userResponse, MediaType.APPLICATION_JSON))
             
-        mockServer.expect(requestTo("https://api.github.com/users/$username/repos?per_page=100&type=owner"))
+        mockServer.expect(requestTo("https://api.github.com/users/$username/repos?per_page=100&type=all"))
             .andRespond(withSuccess(reposResponse, MediaType.APPLICATION_JSON))
 
         mockServer.expect(requestTo("https://api.github.com/search/issues?q=type%3Aissue%20author%3A$username"))
@@ -76,6 +77,9 @@ class StatsIntegrationTest {
 
         mockServer.expect(requestTo("https://api.github.com/search/commits?q=author%3A$username"))
             .andRespond(withSuccess(commitsResponse, MediaType.APPLICATION_JSON))
+            
+        mockServer.expect(requestTo("https://api.github.com/repos/testuser/repo1/languages"))
+            .andRespond(withSuccess(repoLangResponse, MediaType.APPLICATION_JSON))
 
         // when & then
         val result = mockMvc.perform(get("/api/stats").param("username", username))
@@ -84,6 +88,7 @@ class StatsIntegrationTest {
             .andReturn()
 
         val svgContent = result.response.contentAsString
+        println("SVG Content: $svgContent")
         assertThat(svgContent).contains("Test User&apos;s GitHub Stats")
         assertThat(svgContent).contains("Total Stars:")
         assertThat(svgContent).contains("10")
@@ -93,5 +98,8 @@ class StatsIntegrationTest {
         assertThat(svgContent).contains("5")
         assertThat(svgContent).contains("Total Issues:")
         assertThat(svgContent).contains("3")
+        assertThat(svgContent).contains("Most Used Languages")
+        assertThat(svgContent).contains("Kotlin")
+        assertThat(svgContent).contains("100%")
     }
 }

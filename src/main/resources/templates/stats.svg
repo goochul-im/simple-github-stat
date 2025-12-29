@@ -1,12 +1,15 @@
-<svg width="495" height="215" viewBox="0 0 495 215" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:th="http://www.thymeleaf.org">
+<svg width="800" height="235" viewBox="0 0 800 235" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:th="http://www.thymeleaf.org">
     <style>
         .header { font: 600 22px 'Segoe UI', Ubuntu, Sans-Serif; fill: #4facfe; }
         .stat-label { font: 400 14px 'Segoe UI', Ubuntu, Sans-Serif; fill: #c3c8cf; }
         .stat-value { font: 700 16px 'Segoe UI', Ubuntu, Sans-Serif; fill: #fff; }
+        .lang-name { font: 400 13px 'Segoe UI', Ubuntu, Sans-Serif; fill: #c3c8cf; }
+        .lang-percent { font: 700 13px 'Segoe UI', Ubuntu, Sans-Serif; fill: #fff; }
         .icon { fill: #4facfe; }
         
         /* Animations */
         .stagger { opacity: 0; animation: fadeInAnimation 0.5s ease-in-out forwards; }
+        .chart-stagger { opacity: 0; animation: fadeInAnimation 0.5s ease-in-out forwards; animation-delay: 1s; }
         
         @keyframes fadeInAnimation {
             from { opacity: 0; transform: translateX(-20px); }
@@ -35,8 +38,9 @@
         </g>
     </defs>
 
-    <rect x="0.5" y="0.5" rx="10" height="99%" width="494" fill="url(#gradient)" stroke="#e4e2e2" stroke-opacity="0"/>
+    <rect x="0.5" y="0.5" rx="10" height="99%" width="799" fill="url(#gradient)" stroke="#e4e2e2" stroke-opacity="0"/>
 
+    <!-- Left Column: User Stats -->
     <g transform="translate(25, 35)">
         <g transform="translate(0, 0)">
             <text x="0" y="0" class="header" data-testid="header" th:text="${name} + '\'s GitHub Stats'">User's GitHub Stats</text>
@@ -84,6 +88,35 @@
                     </svg>
                     <text class="stat-label" x="30" y="15">Total Issues:</text>
                     <text class="stat-value" x="140" y="15" th:text="${totalIssues}">100</text>
+                </g>
+            </g>
+        </g>
+    </g>
+
+    <!-- Right Column: Language Chart -->
+    <g transform="translate(410, 35)">
+        <g class="chart-stagger">
+            <text x="0" y="0" class="header">Most Used Languages</text>
+            
+            <g transform="translate(20, 45)">
+                <!-- Pie Chart -->
+                <!-- Background Circle -->
+                <circle cx="60" cy="60" r="50" fill="none" stroke="#2f2f2f" stroke-width="15" />
+                
+                <!-- Dynamic Slices -->
+                <g transform="rotate(-90 60 60)">
+                    <circle th:each="lang : ${languages}"
+                            cx="60" cy="60" r="50" fill="none" stroke-width="15"
+                            th:attr="stroke=${lang.color}, stroke-dasharray=${lang.dashArray} + ' 500', stroke-dashoffset=${lang.dashOffset}" />
+                </g>
+                
+                <!-- Legend -->
+                <g transform="translate(140, 0)">
+                    <g th:each="lang, iterStat : ${languages}" th:attr="transform='translate(0, ' + ${iterStat.index * 25} + ')'">
+                        <circle cx="5" cy="5" r="5" th:attr="fill=${lang.color}"/>
+                        <text x="15" y="9" class="lang-name" th:text="${lang.name}">Kotlin</text>
+                        <text x="100" y="9" class="lang-percent" th:text="${lang.formattedPercentage}">45%</text>
+                    </g>
                 </g>
             </g>
         </g>
