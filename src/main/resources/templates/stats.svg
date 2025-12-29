@@ -1,0 +1,91 @@
+<svg width="495" height="215" viewBox="0 0 495 215" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:th="http://www.thymeleaf.org">
+    <style>
+        .header { font: 600 22px 'Segoe UI', Ubuntu, Sans-Serif; fill: #4facfe; }
+        .stat-label { font: 400 14px 'Segoe UI', Ubuntu, Sans-Serif; fill: #c3c8cf; }
+        .stat-value { font: 700 16px 'Segoe UI', Ubuntu, Sans-Serif; fill: #fff; }
+        .icon { fill: #4facfe; }
+        
+        /* Animations */
+        .stagger { opacity: 0; animation: fadeInAnimation 0.5s ease-in-out forwards; }
+        
+        @keyframes fadeInAnimation {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+    </style>
+
+    <defs>
+        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#141321;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#24243e;stop-opacity:1" />
+        </linearGradient>
+        
+        <!-- Icons -->
+        <g id="icon-star">
+            <path fill-rule="evenodd" d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z"/>
+        </g>
+        <g id="icon-commit">
+             <path fill-rule="evenodd" d="M10.5 7.75a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zm1.43.75a4.002 4.002 0 01-7.86 0H.75a.75.75 0 110-1.5h3.32a4.001 4.001 0 017.86 0h3.32a.75.75 0 110 1.5h-3.32z"/>
+        </g>
+        <g id="icon-pr">
+            <path fill-rule="evenodd" d="M7.177 3.073L9.573.677A.25.25 0 0110 .854v4.792a.25.25 0 01-.427.177L7.177 3.427a.25.25 0 010-.354zM3.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 114.5 0 2.25 2.25 0 01-4.5 0zm2.25 7.5a.75.75 0 100 1.5.75.75 0 000-1.5zM.75 10.75a2.25 2.25 0 114.5 0 2.25 2.25 0 01-4.5 0zM12.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 114.5 0 2.25 2.25 0 01-4.5 0zm2.25 7.5a.75.75 0 100 1.5.75.75 0 000-1.5zM10.5 10.75a2.25 2.25 0 114.5 0 2.25 2.25 0 01-4.5 0z"/>
+        </g>
+        <g id="icon-issue">
+            <path fill-rule="evenodd" d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm9 6.5a1 1 0 11-2 0 1 1 0 012 0zm-.75-3.25a.75.75 0 001.5 0V5a.75.75 0 00-1.5 0v6.25z"/>
+        </g>
+    </defs>
+
+    <rect x="0.5" y="0.5" rx="10" height="99%" width="494" fill="url(#gradient)" stroke="#e4e2e2" stroke-opacity="0"/>
+
+    <g transform="translate(25, 35)">
+        <g transform="translate(0, 0)">
+            <text x="0" y="0" class="header" data-testid="header" th:text="${name} + '\'s GitHub Stats'">User's GitHub Stats</text>
+        </g>
+
+        <g transform="translate(0, 40)">
+            <!-- Stars -->
+            <g transform="translate(0, 0)">
+                <g class="stagger" style="animation-delay: 450ms">
+                    <svg x="0" y="0" viewBox="0 0 16 16" width="20" height="20" class="icon">
+                        <use href="#icon-star" />
+                    </svg>
+                    <text class="stat-label" x="30" y="15">Total Stars:</text>
+                    <text class="stat-value" x="140" y="15" th:text="${totalStars}">100</text>
+                </g>
+            </g>
+            
+            <!-- Commits -->
+            <g transform="translate(0, 35)">
+                <g class="stagger" style="animation-delay: 600ms">
+                    <svg x="0" y="0" viewBox="0 0 16 16" width="20" height="20" class="icon">
+                        <use href="#icon-commit" />
+                    </svg>
+                    <text class="stat-label" x="30" y="15">Total Commits:</text>
+                    <text class="stat-value" x="140" y="15" th:text="${totalCommits}">100</text>
+                </g>
+            </g>
+            
+            <!-- PRs -->
+            <g transform="translate(0, 70)">
+                <g class="stagger" style="animation-delay: 750ms">
+                    <svg x="0" y="0" viewBox="0 0 16 16" width="20" height="20" class="icon">
+                         <use href="#icon-pr" />
+                    </svg>
+                    <text class="stat-label" x="30" y="15">Total PRs:</text>
+                    <text class="stat-value" x="140" y="15" th:text="${totalPRs}">100</text>
+                </g>
+            </g>
+            
+            <!-- Issues -->
+            <g transform="translate(0, 105)">
+                <g class="stagger" style="animation-delay: 900ms">
+                    <svg x="0" y="0" viewBox="0 0 16 16" width="20" height="20" class="icon">
+                        <use href="#icon-issue" />
+                    </svg>
+                    <text class="stat-label" x="30" y="15">Total Issues:</text>
+                    <text class="stat-value" x="140" y="15" th:text="${totalIssues}">100</text>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
