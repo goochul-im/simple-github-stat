@@ -15,9 +15,13 @@ class StatsController(
 ) {
 
     @GetMapping("/api/stats")
-    fun getStats(@RequestParam username: String): ResponseEntity<String> {
+    fun getStats(
+        @RequestParam username: String,
+        @RequestParam(required = false) exclude: String?
+    ): ResponseEntity<String> {
         return try {
-            val stats = statsService.getStats(username)
+            val excludedRepos = exclude?.split(",")?.map { it.trim() }?.toSet() ?: emptySet()
+            val stats = statsService.getStats(username, excludedRepos)
             val svg = svgGenerator.generateSvg(stats)
 
             ResponseEntity.ok()

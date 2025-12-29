@@ -6,55 +6,45 @@ import kotlin.math.roundToInt
 @Service
 class StatsService(private val githubClient: GithubClient) {
 
-    private val languageColors = mapOf(
-        "Kotlin" to "#A97BFF",
-        "Java" to "#b07219",
-        "Python" to "#3572A5",
-        "JavaScript" to "#f1e05a",
-        "TypeScript" to "#2b7489",
-        "HTML" to "#e34c26",
-        "CSS" to "#563d7c",
-        "Go" to "#00ADD8",
-        "Rust" to "#dea584",
-        "C++" to "#f34b7d",
-        "C" to "#555555",
-        "Swift" to "#ffac45",
-        "Shell" to "#89e051",
-        "PHP" to "#4F5D95",
-        "Ruby" to "#701516",
-        "C#" to "#178600"
-    )
     private val defaultColor = "#EDEDED"
 
-    fun getStats(username: String): GithubStatsDto {
-        val user = githubClient.fetchUser(username)
+    fun getStats(username: String, excludedRepos: Set<String> = emptySet()): GithubStatsDto {
+        // 1. Fetch User & Repos (GraphQL)
+        val user = githubClient.fetchUserAndReposGraphQL(username)
             ?: throw IllegalArgumentException("User not found")
 
-        val repos = githubClient.fetchRepositories(username)
-        val totalStars = repos.sumOf { it.stargazers_count }
-        
+        // 2. Fetch Search Stats (REST) - Keeping REST for simplicity in Search
         val totalIssues = githubClient.searchIssues("type:issue author:$username")
         val totalPRs = githubClient.searchIssues("type:pr author:$username")
         val totalCommits = githubClient.searchCommits("author:$username")
 
-        // Language Analysis (Byte-based)
-        val sourceRepos = repos.filter { !it.fork }
+        // Filter out excluded repositories
+        val allRepos = user.repositories.nodes.filter { !excludedRepos.contains(it.name) }
+        val totalStars = allRepos.sumOf { it.stargazerCount }
+
+        // 3. Language Analysis (Byte-based using GraphQL data)
+        val sourceRepos = allRepos.filter { !it.isFork }
         
-        // Use parallel stream to fetch languages for each repo concurrently
-        val languageBytes = sourceRepos.parallelStream()
-            .map { repo -> 
-                githubClient.fetchRepoLanguages(repo.owner.login, repo.name)
+        val languageBytes = mutableMapOf<String, Long>()
+        val languageColorMap = mutableMapOf<String, String>()
+
+        sourceRepos.forEach { repo ->
+            repo.languages.edges.forEach { edge ->
+                val langName = edge.node.name
+                val bytes = edge.size
+                val color = edge.node.color ?: defaultColor
+                
+                languageBytes[langName] = languageBytes.getOrDefault(langName, 0L) + bytes
+                // Keep the last seen color (usually consistent)
+                if (!languageColorMap.containsKey(langName)) {
+                    languageColorMap[langName] = color
+                }
             }
-            .flatMap { it.entries.stream() }
-            .collect(java.util.stream.Collectors.groupingBy(
-                { it.key }, 
-                java.util.stream.Collectors.summingLong { it.value }
-            ))
+        }
             
         val totalBytes = languageBytes.values.sum()
         
         // Calculate percentages and prepare chart data
-        // SVG Circle Radius = 50, Circumference = 2 * PI * 50 ≈ 314.159
         val circumference = 314.159
         var currentOffset = 0.0
         
@@ -68,7 +58,7 @@ class StatsService(private val githubClient: GithubClient) {
                     name = lang,
                     percentage = percentage,
                     formattedPercentage = "${percentage.roundToInt()}%",
-                    color = languageColors[lang] ?: defaultColor,
+                    color = languageColorMap[lang] ?: defaultColor,
                     dashArray = dashArray,
                     dashOffset = -currentOffset
                 )

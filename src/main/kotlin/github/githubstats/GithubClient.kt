@@ -6,41 +6,53 @@ import org.springframework.web.client.RestClient
 @Component
 class GithubClient(private val githubRestClient: RestClient) {
 
-    fun fetchUser(username: String): RestUserResponse? {
+    fun fetchUserAndReposGraphQL(username: String): GraphqlUser? {
+        val query = """
+            query UserStats(${"$"}login: String!) {
+              user(login: ${"$"}login) {
+                name
+                login
+                repositories(first: 100, ownerAffiliations: [OWNER, ORGANIZATION_MEMBER], orderBy: {field: UPDATED_AT, direction: DESC}) {
+                  nodes {
+                    name
+                    isFork
+                    stargazerCount
+                    languages(first: 10, orderBy: { field: SIZE, direction: DESC }) {
+                      edges {
+                        size
+                        node {
+                          name
+                          color
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+
+        val requestBody = mapOf(
+            "query" to query,
+            "variables" to mapOf("login" to username)
+        )
+
         return try {
-            githubRestClient.get()
-                .uri("/users/{username}", username)
+            val response = githubRestClient.post()
+                .uri("/graphql")
+                .body(requestBody)
                 .retrieve()
-                .body(RestUserResponse::class.java)
+                .body(GraphqlResponse::class.java)
+            
+            response?.data?.user
         } catch (e: Exception) {
+            e.printStackTrace()
             null
         }
     }
 
-    fun fetchRepositories(username: String): List<RestRepository> {
-        return try {
-            githubRestClient.get()
-                .uri("/users/{username}/repos?per_page=100&type=all", username)
-                .retrieve()
-                .body(Array<RestRepository>::class.java)?.toList() ?: emptyList()
-        } catch (e: Exception) {
-            emptyList()
-        }
-    }
-
-    fun fetchRepoLanguages(owner: String, repo: String): Map<String, Long> {
-        return try {
-            githubRestClient.get()
-                .uri("/repos/{owner}/{repo}/languages", owner, repo)
-                .retrieve()
-                .body(object : org.springframework.core.ParameterizedTypeReference<Map<String, Long>>() {}) ?: emptyMap()
-        } catch (e: Exception) {
-            emptyMap()
-        }
-    }
-
     // Search API has strict rate limits (10 requests per minute for unauthenticated requests)
-    // We should be careful using this.
+    // Keeping this as REST for now as it's simple and effective for just 3 counts.
     fun searchIssues(query: String): Int {
         return try {
             val response = githubRestClient.get()
@@ -61,34 +73,40 @@ class GithubClient(private val githubRestClient: RestClient) {
                 .body(RestSearchResponse::class.java)
             response?.total_count ?: 0
         } catch (e: Exception) {
-            // Search commits API requires preview header sometimes, but mostly standard now.
-            // Also requires authentication for some endpoints, but let's try.
-            // Actually, /search/commits REQUIRES authentication for some headers, 
-            // but let's see if it works without token or if we need to fallback.
-            // Documentation says: "The Commit Search API is currently available for developers to preview."
-            // and "You must provide a valid token". 
-            // If no token, this might fail.
-            // Let's return 0 if it fails.
             0
         }
     }
 }
 
-data class RestUserResponse(
+// GraphQL Data Classes
+data class GraphqlResponse(val data: GraphqlData?)
+data class GraphqlData(val user: GraphqlUser?)
+
+data class GraphqlUser(
+    val name: String?,
     val login: String,
-    val name: String?
+    val repositories: GraphqlRepoConnection
 )
 
-data class RestRepository(
+data class GraphqlRepoConnection(val nodes: List<GraphqlRepository>)
+
+data class GraphqlRepository(
     val name: String,
-    val owner: RestOwner,
-    val stargazers_count: Int,
-    val fork: Boolean,
-    val language: String?
+    val isFork: Boolean,
+    val stargazerCount: Int,
+    val languages: GraphqlLanguageConnection
 )
 
-data class RestOwner(
-    val login: String
+data class GraphqlLanguageConnection(val edges: List<GraphqlLanguageEdge>)
+
+data class GraphqlLanguageEdge(
+    val size: Long,
+    val node: GraphqlLanguageNode
+)
+
+data class GraphqlLanguageNode(
+    val name: String,
+    val color: String?
 )
 
 data class RestSearchResponse(
