@@ -32,7 +32,7 @@ class StatsControllerTest {
         val stats = GithubStatsDto("Test User", 10, 20, 5, 2, emptyList())
         val svgContent = "<svg>...</svg>"
 
-        `when`(statsService.getStats(username)).thenReturn(stats)
+        `when`(statsService.getStats(username, emptySet(), false)).thenReturn(stats)
         `when`(svgGenerator.generateSvg(stats)).thenReturn(svgContent)
 
         // when & then
@@ -46,7 +46,7 @@ class StatsControllerTest {
     fun `유저를 찾을 수 없을 때 404를 반환해야 한다`() {
         // given
         val username = "unknown"
-        `when`(statsService.getStats(username)).thenThrow(IllegalArgumentException("User not found"))
+        `when`(statsService.getStats(username, emptySet(), false)).thenThrow(IllegalArgumentException("User not found"))
 
         // when & then
         mockMvc.perform(get("/api/stats").param("username", username))

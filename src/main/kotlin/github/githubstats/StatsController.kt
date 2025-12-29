@@ -17,11 +17,12 @@ class StatsController(
     @GetMapping("/api/stats")
     fun getStats(
         @RequestParam username: String,
-        @RequestParam(required = false) exclude: String?
+        @RequestParam(required = false) exclude: String?,
+        @RequestParam(name = "include_orgs", required = false, defaultValue = "false") includeOrgs: Boolean
     ): ResponseEntity<String> {
         return try {
             val excludedRepos = exclude?.split(",")?.map { it.trim() }?.toSet() ?: emptySet()
-            val stats = statsService.getStats(username, excludedRepos)
+            val stats = statsService.getStats(username, excludedRepos, includeOrgs)
             val svg = svgGenerator.generateSvg(stats)
 
             ResponseEntity.ok()

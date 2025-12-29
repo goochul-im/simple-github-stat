@@ -6,13 +6,15 @@ import org.springframework.web.client.RestClient
 @Component
 class GithubClient(private val githubRestClient: RestClient) {
 
-    fun fetchUserAndReposGraphQL(username: String): GraphqlUser? {
+    fun fetchUserAndReposGraphQL(username: String, includeOrgs: Boolean): GraphqlUser? {
+        val affiliations = if (includeOrgs) "[OWNER, ORGANIZATION_MEMBER]" else "[OWNER, COLLABORATOR]"
+        
         val query = """
             query UserStats(${"$"}login: String!) {
               user(login: ${"$"}login) {
                 name
                 login
-                repositories(first: 100, ownerAffiliations: [OWNER, ORGANIZATION_MEMBER], orderBy: {field: UPDATED_AT, direction: DESC}) {
+                repositories(first: 100, ownerAffiliations: $affiliations, orderBy: {field: UPDATED_AT, direction: DESC}) {
                   nodes {
                     name
                     isFork

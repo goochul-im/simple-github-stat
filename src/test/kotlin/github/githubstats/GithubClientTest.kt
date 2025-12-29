@@ -57,7 +57,7 @@ class GithubClientTest {
         server.expect(requestTo("https://api.github.com/graphql"))
             .andRespond(withSuccess(response, MediaType.APPLICATION_JSON))
 
-        val result = client.fetchUserAndReposGraphQL(username)
+        val result = client.fetchUserAndReposGraphQL(username, false)
         assertThat(result?.name).isEqualTo("Test User")
         assertThat(result?.repositories?.nodes).hasSize(1)
         assertThat(result?.repositories?.nodes?.get(0)?.languages?.edges).hasSize(1)

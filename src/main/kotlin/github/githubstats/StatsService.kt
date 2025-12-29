@@ -8,9 +8,9 @@ class StatsService(private val githubClient: GithubClient) {
 
     private val defaultColor = "#EDEDED"
 
-    fun getStats(username: String, excludedRepos: Set<String> = emptySet()): GithubStatsDto {
+    fun getStats(username: String, excludedRepos: Set<String> = emptySet(), includeOrgs: Boolean = false): GithubStatsDto {
         // 1. Fetch User & Repos (GraphQL)
-        val user = githubClient.fetchUserAndReposGraphQL(username)
+        val user = githubClient.fetchUserAndReposGraphQL(username, includeOrgs)
             ?: throw IllegalArgumentException("User not found")
 
         // 2. Fetch Search Stats (REST) - Keeping REST for simplicity in Search
