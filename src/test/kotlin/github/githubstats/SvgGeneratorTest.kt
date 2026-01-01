@@ -36,7 +36,7 @@ class SvgGeneratorTest {
         assertThat(svg).contains("100")
         assertThat(svg).contains("Total Commits:")
         assertThat(svg).contains("500")
-        assertThat(svg).contains("Last Month:")
+        assertThat(svg).contains("Last 30 days:")
         assertThat(svg).contains("50")
         assertThat(svg).contains("Most Used Languages")
         assertThat(svg).contains("Kotlin")

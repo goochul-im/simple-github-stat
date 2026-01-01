@@ -75,7 +75,7 @@
                     <svg x="0" y="0" viewBox="0 0 16 16" width="20" height="20" class="icon">
                         <use href="#icon-commit" />
                     </svg>
-                    <text class="stat-label" x="30" y="15">Last Month:</text>
+                    <text class="stat-label" x="30" y="15">Last 30 days:</text>
                     <text class="stat-value" x="140" y="15" th:text="${lastMonthCommits}">25</text>
                 </g>
             </g>

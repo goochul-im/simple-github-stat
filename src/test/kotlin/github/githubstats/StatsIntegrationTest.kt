@@ -122,7 +122,7 @@ class StatsIntegrationTest {
         assertThat(svgContent).contains("Test User&apos;s GitHub Stats")
         assertThat(svgContent).contains("Total Stars:")
         assertThat(svgContent).contains("10")
-        assertThat(svgContent).contains("Last Month:")
+        assertThat(svgContent).contains("Last 30 days:")
         assertThat(svgContent).contains("25")
         assertThat(svgContent).contains("Most Used Languages")
         assertThat(svgContent).contains("Kotlin")
