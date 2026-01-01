@@ -90,10 +90,12 @@ class StatsIntegrationTest {
         val issuesResponse = """{"total_count": 3}"""
         val prsResponse = """{"total_count": 5}"""
         val commitsResponse = """{"total_count": 100}"""
-
+        
+        // 1. GraphQL User Info
         mockServer.expect(requestTo("https://api.github.com/graphql"))
             .andRespond(withSuccess(graphqlResponse, MediaType.APPLICATION_JSON))
 
+        // 2. Search Stats
         mockServer.expect(requestTo("https://api.github.com/search/issues?q=type%3Aissue%20author%3A$username"))
             .andRespond(withSuccess(issuesResponse, MediaType.APPLICATION_JSON))
 
@@ -102,6 +104,13 @@ class StatsIntegrationTest {
 
         mockServer.expect(requestTo("https://api.github.com/search/commits?q=author%3A$username"))
             .andRespond(withSuccess(commitsResponse, MediaType.APPLICATION_JSON))
+
+        // Last Month Commits (Use regex to handle dynamic dates and URL encoding)
+        // Matches: ...q=author:testuser author-date:YYYY-MM-DD..YYYY-MM-DD
+        mockServer.expect(requestTo(org.hamcrest.Matchers.matchesPattern(".*q=author%3A$username.*author-date.*")))
+            .andRespond(withSuccess("""{"total_count": 25}""", MediaType.APPLICATION_JSON))
+
+        // No more event fetching calls
 
         // when & then
         val result = mockMvc.perform(get("/api/stats").param("username", username))
@@ -113,7 +122,10 @@ class StatsIntegrationTest {
         assertThat(svgContent).contains("Test User&apos;s GitHub Stats")
         assertThat(svgContent).contains("Total Stars:")
         assertThat(svgContent).contains("10")
+        assertThat(svgContent).contains("Last Month:") // Verify Last Month Label
+        assertThat(svgContent).contains("25")          // Verify Last Month Count
         assertThat(svgContent).contains("Most Used Languages")
+        // Kotlin should be detected from commit details
         assertThat(svgContent).contains("Kotlin")
     }
 }

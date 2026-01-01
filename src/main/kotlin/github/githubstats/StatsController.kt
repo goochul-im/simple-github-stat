@@ -18,11 +18,14 @@ class StatsController(
     fun getStats(
         @RequestParam username: String,
         @RequestParam(required = false) exclude: String?,
+        @RequestParam(required = false) hide: String?,
         @RequestParam(name = "include_orgs", required = false, defaultValue = "false") includeOrgs: Boolean
     ): ResponseEntity<String> {
         return try {
             val excludedRepos = exclude?.split(",")?.map { it.trim() }?.toSet() ?: emptySet()
-            val stats = statsService.getStats(username, excludedRepos, includeOrgs)
+            val hiddenLanguages = hide?.split(",")?.map { it.trim().lowercase() }?.toSet() ?: emptySet()
+            
+            val stats = statsService.getStats(username, excludedRepos, includeOrgs, hiddenLanguages)
             val svg = svgGenerator.generateSvg(stats)
 
             ResponseEntity.ok()

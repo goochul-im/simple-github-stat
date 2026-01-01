@@ -12,6 +12,7 @@ class SvgGenerator(private val templateEngine: TemplateEngine) {
         context.setVariable("name", stats.name)
         context.setVariable("totalStars", stats.totalStars)
         context.setVariable("totalCommits", stats.totalCommits)
+        context.setVariable("lastMonthCommits", stats.lastMonthCommits)
         context.setVariable("totalPRs", stats.totalPRs)
         context.setVariable("totalIssues", stats.totalIssues)
         context.setVariable("languages", stats.languages)

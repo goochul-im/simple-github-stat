@@ -1,5 +1,6 @@
 package github.githubstats
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
 
@@ -67,50 +68,98 @@ class GithubClient(private val githubRestClient: RestClient) {
         }
     }
     
-    fun searchCommits(query: String): Int {
-         return try {
-            val response = githubRestClient.get()
-                .uri("/search/commits?q={query}", query)
-                .retrieve()
-                .body(RestSearchResponse::class.java)
-            response?.total_count ?: 0
-        } catch (e: Exception) {
-            0
+        fun searchCommits(query: String): Int {
+    
+             return try {
+    
+                val response = githubRestClient.get()
+    
+                    .uri("/search/commits?q={query}", query)
+    
+                    .retrieve()
+    
+                    .body(RestSearchResponse::class.java)
+    
+                response?.total_count ?: 0
+    
+            } catch (e: Exception) {
+    
+                0
+    
+            }
+    
         }
+    
     }
-}
-
-// GraphQL Data Classes
-data class GraphqlResponse(val data: GraphqlData?)
-data class GraphqlData(val user: GraphqlUser?)
-
-data class GraphqlUser(
-    val name: String?,
-    val login: String,
-    val repositories: GraphqlRepoConnection
-)
-
-data class GraphqlRepoConnection(val nodes: List<GraphqlRepository>)
-
-data class GraphqlRepository(
-    val name: String,
-    val isFork: Boolean,
-    val stargazerCount: Int,
-    val languages: GraphqlLanguageConnection
-)
-
-data class GraphqlLanguageConnection(val edges: List<GraphqlLanguageEdge>)
-
-data class GraphqlLanguageEdge(
-    val size: Long,
-    val node: GraphqlLanguageNode
-)
-
-data class GraphqlLanguageNode(
-    val name: String,
-    val color: String?
-)
-
-data class RestSearchResponse(
-    val total_count: Int
-)
+    
+    
+    
+    // GraphQL Data Classes
+    
+    data class GraphqlResponse(val data: GraphqlData?)
+    
+    data class GraphqlData(val user: GraphqlUser?)
+    
+    
+    
+    data class GraphqlUser(
+    
+        val name: String?,
+    
+        val login: String,
+    
+        val repositories: GraphqlRepoConnection
+    
+    )
+    
+    
+    
+    data class GraphqlRepoConnection(val nodes: List<GraphqlRepository>)
+    
+    
+    
+    data class GraphqlRepository(
+    
+        val name: String,
+    
+        val isFork: Boolean,
+    
+        val stargazerCount: Int,
+    
+        val languages: GraphqlLanguageConnection
+    
+    )
+    
+    
+    
+    data class GraphqlLanguageConnection(val edges: List<GraphqlLanguageEdge>)
+    
+    
+    
+    data class GraphqlLanguageEdge(
+    
+        val size: Long,
+    
+        val node: GraphqlLanguageNode
+    
+    )
+    
+    
+    
+    data class GraphqlLanguageNode(
+    
+        val name: String,
+    
+        val color: String?
+    
+    )
+    
+    
+    
+    data class RestSearchResponse(
+    
+        val total_count: Int
+    
+    )
+    
+    

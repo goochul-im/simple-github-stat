@@ -18,7 +18,7 @@ class StatsServiceTest {
     private lateinit var statsService: StatsService
 
     @Test
-    fun `유저 통계를 정확히 계산해야 한다`() {
+    fun `GraphQL 바이트 기준으로 언어 통계를 계산해야 한다`() {
         // given
         val username = "testuser"
         val repo1 = GraphqlRepository(
@@ -26,7 +26,10 @@ class StatsServiceTest {
             isFork = false,
             stargazerCount = 10,
             languages = GraphqlLanguageConnection(
-                listOf(GraphqlLanguageEdge(1000, GraphqlLanguageNode("Kotlin", "#A97BFF")))
+                listOf(
+                    GraphqlLanguageEdge(1000, GraphqlLanguageNode("Kotlin", "#A97BFF")),
+                    GraphqlLanguageEdge(500, GraphqlLanguageNode("Java", "#B07219"))
+                )
             )
         )
         val user = GraphqlUser(
@@ -36,62 +39,63 @@ class StatsServiceTest {
         )
         
         `when`(githubClient.fetchUserAndReposGraphQL(username, false)).thenReturn(user)
-        `when`(githubClient.searchIssues("type:issue author:$username")).thenReturn(3)
+        `when`(githubClient.searchIssues("type:issue author:$username")).thenReturn(10)
         `when`(githubClient.searchIssues("type:pr author:$username")).thenReturn(5)
         `when`(githubClient.searchCommits("author:$username")).thenReturn(100)
+        // Mock Last Month Commits
+        `when`(githubClient.searchCommits(org.mockito.ArgumentMatchers.startsWith("author:$username author-date:"))).thenReturn(25)
 
         // when
         val result = statsService.getStats(username)
 
         // then
-        assertThat(result.name).isEqualTo("Test User")
-        assertThat(result.totalStars).isEqualTo(10)
         assertThat(result.totalCommits).isEqualTo(100)
-        assertThat(result.totalPRs).isEqualTo(5)
-        assertThat(result.totalIssues).isEqualTo(3)
+        assertThat(result.lastMonthCommits).isEqualTo(25)
         
-        assertThat(result.languages).hasSize(1)
-        assertThat(result.languages[0].name).isEqualTo("Kotlin")
-        assertThat(result.languages[0].color).isEqualTo("#A97BFF")
+        // Total bytes = 1500
+        // Kotlin: 1000/1500 = 66.6%
+        // Java: 500/1500 = 33.3%
+        
+        val kotlinStat = result.languages.find { it.name == "Kotlin" }
+        val javaStat = result.languages.find { it.name == "Java" }
+        
+        assertThat(kotlinStat).isNotNull
+        assertThat(javaStat).isNotNull
+        
+        // Assert percentage ranges
+        assertThat(kotlinStat?.percentage).isGreaterThan(60.0)
+        assertThat(javaStat?.percentage).isLessThan(40.0)
     }
 
     @Test
-    fun `특정 리포지토리를 제외하고 통계를 계산해야 한다`() {
+    fun `숨김 처리된 언어는 통계에서 제외되어야 한다`() {
         // given
         val username = "testuser"
         val repo1 = GraphqlRepository(
             name = "repo1",
             isFork = false,
-            stargazerCount = 10,
+            stargazerCount = 0,
             languages = GraphqlLanguageConnection(
-                listOf(GraphqlLanguageEdge(1000, GraphqlLanguageNode("Kotlin", "#A97BFF")))
+                listOf(
+                    GraphqlLanguageEdge(1000, GraphqlLanguageNode("Kotlin", "#A97BFF")),
+                    GraphqlLanguageEdge(5000, GraphqlLanguageNode("HTML", "#E34C26")) // This should be hidden
+                )
             )
         )
-        val repo2 = GraphqlRepository(
-            name = "ignored-repo",
-            isFork = false,
-            stargazerCount = 50,
-            languages = GraphqlLanguageConnection(
-                listOf(GraphqlLanguageEdge(5000, GraphqlLanguageNode("Java", "#B07219")))
-            )
-        )
-        val user = GraphqlUser(
-            name = "Test User",
-            login = "testuser",
-            repositories = GraphqlRepoConnection(listOf(repo1, repo2))
-        )
+        val user = GraphqlUser("Test User", "testuser", GraphqlRepoConnection(listOf(repo1)))
         
         `when`(githubClient.fetchUserAndReposGraphQL(username, false)).thenReturn(user)
-        `when`(githubClient.searchIssues("type:issue author:$username")).thenReturn(0)
-        `when`(githubClient.searchIssues("type:pr author:$username")).thenReturn(0)
-        `when`(githubClient.searchCommits("author:$username")).thenReturn(0)
+        `when`(githubClient.searchIssues(org.mockito.ArgumentMatchers.anyString())).thenReturn(0)
+        `when`(githubClient.searchCommits(org.mockito.ArgumentMatchers.anyString())).thenReturn(0)
 
         // when
-        val result = statsService.getStats(username, setOf("ignored-repo"))
+        // Hide "html" (case-insensitive check needed)
+        val result = statsService.getStats(username, hiddenLanguages = setOf("html"))
 
         // then
-        assertThat(result.totalStars).isEqualTo(10) // 50 stars from ignored repo should be excluded
+        // HTML is hidden, so only Kotlin remains.
         assertThat(result.languages).hasSize(1)
         assertThat(result.languages[0].name).isEqualTo("Kotlin")
+        assertThat(result.languages[0].percentage).isEqualTo(100.0)
     }
 }

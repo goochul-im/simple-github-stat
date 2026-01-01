@@ -1,4 +1,4 @@
-<svg width="800" height="235" viewBox="0 0 800 235" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:th="http://www.thymeleaf.org">
+<svg width="800" height="280" viewBox="0 0 800 280" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:th="http://www.thymeleaf.org">
     <style>
         .header { font: 600 22px 'Segoe UI', Ubuntu, Sans-Serif; fill: #4facfe; }
         .stat-label { font: 400 14px 'Segoe UI', Ubuntu, Sans-Serif; fill: #c3c8cf; }
@@ -69,9 +69,20 @@
                 </g>
             </g>
             
-            <!-- PRs -->
+            <!-- Last Month Commits (Added) -->
             <g transform="translate(0, 70)">
                 <g class="stagger" style="animation-delay: 750ms">
+                    <svg x="0" y="0" viewBox="0 0 16 16" width="20" height="20" class="icon">
+                        <use href="#icon-commit" />
+                    </svg>
+                    <text class="stat-label" x="30" y="15">Last 30 days:</text>
+                    <text class="stat-value" x="140" y="15" th:text="${lastMonthCommits}">25</text>
+                </g>
+            </g>
+            
+            <!-- PRs -->
+            <g transform="translate(0, 105)">
+                <g class="stagger" style="animation-delay: 900ms">
                     <svg x="0" y="0" viewBox="0 0 16 16" width="20" height="20" class="icon">
                          <use href="#icon-pr" />
                     </svg>
@@ -81,8 +92,8 @@
             </g>
             
             <!-- Issues -->
-            <g transform="translate(0, 105)">
-                <g class="stagger" style="animation-delay: 900ms">
+            <g transform="translate(0, 140)">
+                <g class="stagger" style="animation-delay: 1050ms">
                     <svg x="0" y="0" viewBox="0 0 16 16" width="20" height="20" class="icon">
                         <use href="#icon-issue" />
                     </svg>
@@ -98,7 +109,7 @@
         <g class="chart-stagger">
             <text x="0" y="0" class="header">Most Used Languages</text>
             
-            <g transform="translate(20, 45)">
+            <g transform="translate(20, 65)"> <!-- Y offset adjusted for balance -->
                 <!-- Pie Chart -->
                 <!-- Background Circle -->
                 <circle cx="60" cy="60" r="50" fill="none" stroke="#2f2f2f" stroke-width="15" />
