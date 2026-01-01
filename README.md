@@ -80,8 +80,14 @@ GET /api/stats?username={github_username}
 | :--- | :--- | :--- | :--- | :--- |
 | `username` | String | **Yes** | - | 조회할 GitHub 사용자 ID |
 | `exclude` | String | No | - | 통계에서 제외할 리포지토리 이름 (쉼표로 구분) <br> 예: `exclude=repo1,repo2` |
-| `hide` | String | No | - | 통계 그래프에서 제외할 언어 이름 (쉼표로 구분, 대소문자 무관) <br> 예: `hide=html,css` |
+| `hide` | String | No | - | 통계 그래프에서 제외할 언어 이름 (쉼표로 구분, 대소문자 무관) <br> 예: `hide=html,css` <br> ※ `C++`, `C#` 등 특수문자 주의 (아래 참고) |
 | `include_orgs` | Boolean | No | `false` | 사용자가 속한 조직(Organization)의 리포지토리 포함 여부 <br> `true`: 조직 포함 / `false`: 개인 소유만 |
+
+### ⚠️ 특수문자 포함 언어 필터링 (`hide`)
+`C++`, `C#` 등 특수문자가 포함된 언어를 제외할 때는 다음과 같이 작성하세요.
+
+1.  **C++**: `hide=c++` (코드에서 공백을 자동으로 `+`로 변환합니다.)
+2.  **C#**: `hide=c%23` (URL에서 `#`은 `%23`으로 인코딩해야 합니다.)
 
 ### 사용 예시
 

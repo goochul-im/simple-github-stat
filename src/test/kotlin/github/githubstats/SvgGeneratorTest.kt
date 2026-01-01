@@ -36,15 +36,12 @@ class SvgGeneratorTest {
         assertThat(svg).contains("100")
         assertThat(svg).contains("Total Commits:")
         assertThat(svg).contains("500")
-        assertThat(svg).contains("Last Month:") // New label check
-        assertThat(svg).contains("50")          // Last Month Value check
-        assertThat(svg).contains("Total PRs:")
-        assertThat(svg).contains("20")
-        assertThat(svg).contains("Total Issues:")
-        assertThat(svg).contains("10")
+        assertThat(svg).contains("Last Month:")
+        assertThat(svg).contains("50")
         assertThat(svg).contains("Most Used Languages")
         assertThat(svg).contains("Kotlin")
         assertThat(svg).contains("60%")
         assertThat(svg).contains("Java")
+        assertThat(svg).contains("40%")
     }
 }

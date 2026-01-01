@@ -23,7 +23,16 @@ class StatsController(
     ): ResponseEntity<String> {
         return try {
             val excludedRepos = exclude?.split(",")?.map { it.trim() }?.toSet() ?: emptySet()
-            val hiddenLanguages = hide?.split(",")?.map { it.trim().lowercase() }?.toSet() ?: emptySet()
+            
+            // Handle C++ (+) and other potential URL decoding issues
+            // Logic: Replace trailing spaces (which were likely +) with +, then trim leading whitespace.
+            val hiddenLanguages = hide?.split(",")
+                ?.map { token -> 
+                    token.replace(Regex("\\s+$")) { match -> "+".repeat(match.value.length) }
+                        .trim()
+                        .lowercase()
+                }
+                ?.toSet() ?: emptySet()
             
             val stats = statsService.getStats(username, excludedRepos, includeOrgs, hiddenLanguages)
             val svg = svgGenerator.generateSvg(stats)

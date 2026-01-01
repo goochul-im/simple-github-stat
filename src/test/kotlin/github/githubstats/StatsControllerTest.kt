@@ -53,4 +53,23 @@ class StatsControllerTest {
         mockMvc.perform(get("/api/stats").param("username", username))
             .andExpect(status().isNotFound)
     }
+
+    @Test
+    fun `특수문자가 포함된 언어(C++) 필터링이 정상 동작해야 한다`() {
+        // given
+        val username = "testuser"
+        val stats = GithubStatsDto("Test User", 10, 20, 5, 5, 2, emptyList())
+        // In URL, "c++" might come in as "c  " (two spaces)
+        val hideParam = "c  " 
+        val expectedHiddenSet = setOf("c++")
+
+        `when`(statsService.getStats(username, emptySet(), false, expectedHiddenSet)).thenReturn(stats)
+        `when`(svgGenerator.generateSvg(stats)).thenReturn("<svg></svg>")
+
+        // when & then
+        mockMvc.perform(get("/api/stats")
+            .param("username", username)
+            .param("hide", hideParam))
+            .andExpect(status().isOk)
+    }
 }

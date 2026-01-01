@@ -122,10 +122,9 @@ class StatsIntegrationTest {
         assertThat(svgContent).contains("Test User&apos;s GitHub Stats")
         assertThat(svgContent).contains("Total Stars:")
         assertThat(svgContent).contains("10")
-        assertThat(svgContent).contains("Last Month:") // Verify Last Month Label
-        assertThat(svgContent).contains("25")          // Verify Last Month Count
+        assertThat(svgContent).contains("Last Month:")
+        assertThat(svgContent).contains("25")
         assertThat(svgContent).contains("Most Used Languages")
-        // Kotlin should be detected from commit details
         assertThat(svgContent).contains("Kotlin")
     }
 }
