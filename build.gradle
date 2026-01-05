@@ -3,6 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.spring' version '1.9.25'
     id 'org.springframework.boot' version '3.4.1'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'com.google.cloud.tools.jib' version '3.4.4'
 }
 
 group = 'github'
@@ -39,4 +40,18 @@ kotlin {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+jib {
+    from {
+        image = 'eclipse-temurin:17-jre-alpine'
+    }
+    to {
+        image = 'gooch1744/github-stats'
+        tags = ['latest']
+    }
+    container {
+        creationTime = 'USE_CURRENT_TIMESTAMP'
+        jvmFlags = ['-Djava.security.egd=file:/dev/./urandom']
+    }
 }
