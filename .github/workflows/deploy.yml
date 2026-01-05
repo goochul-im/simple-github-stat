@@ -48,4 +48,5 @@ jobs:
             -p 8080:8080 \
             --restart unless-stopped \
             -e TZ=Asia/Seoul \
+            -e GITHUB_TOKEN=${{ secrets.GH_TOKEN }} \
             gooch1744/github-stats:latest
