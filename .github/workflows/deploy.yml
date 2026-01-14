@@ -49,4 +49,5 @@ jobs:
             --restart unless-stopped \
             -e TZ=Asia/Seoul \
             -e GITHUB_TOKEN=${{ secrets.GH_TOKEN }} \
+            -e CACHE_WARMUP_USERNAMES=goochul-im \
             gooch1744/github-stats:latest
