@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class CacheWarmupScheduler(
-    private val statsService: StatsService,
+    private val rawStatsFetcher: RawStatsFetcher,
     @Value("\${cache.warmup.usernames:}") private val usernames: String,
     @Value("\${cache.warmup.include-orgs:false}") private val includeOrgs: Boolean
 ) {
@@ -35,7 +35,7 @@ class CacheWarmupScheduler(
         usernameList.forEach { username ->
             try {
                 log.info("Warming up cache for user: {}", username)
-                statsService.getStats(username, includeOrgs = includeOrgs)
+                rawStatsFetcher.fetch(username, includeOrgs)
                 log.info("Cache warmed successfully for user: {}", username)
             } catch (e: Exception) {
                 log.warn("Failed to warm cache for user: {}, error: {}", username, e.message)

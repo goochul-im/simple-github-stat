@@ -12,7 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension
 class StatsServiceTest {
 
     @Mock
-    private lateinit var githubClient: GithubClient
+    private lateinit var rawStatsFetcher: RawStatsFetcher
 
     @InjectMocks
     private lateinit var statsService: StatsService
@@ -32,18 +32,17 @@ class StatsServiceTest {
                 )
             )
         )
-        val user = GraphqlUser(
+
+        val rawStats = RawGithubStats(
             name = "Test User",
-            login = "testuser",
-            repositories = GraphqlRepoConnection(listOf(repo1))
+            repos = listOf(repo1),
+            totalIssues = 10,
+            totalPRs = 5,
+            totalCommits = 100,
+            lastMonthCommits = 25
         )
-        
-        `when`(githubClient.fetchUserAndReposGraphQL(username, false)).thenReturn(user)
-        `when`(githubClient.searchIssues("type:issue author:$username")).thenReturn(10)
-        `when`(githubClient.searchIssues("type:pr author:$username")).thenReturn(5)
-        `when`(githubClient.searchCommits("author:$username")).thenReturn(100)
-        // Mock Last Month Commits
-        `when`(githubClient.searchCommits(org.mockito.ArgumentMatchers.startsWith("author:$username author-date:"))).thenReturn(25)
+
+        `when`(rawStatsFetcher.fetch(username, false)).thenReturn(rawStats)
 
         // when
         val result = statsService.getStats(username)
@@ -51,17 +50,17 @@ class StatsServiceTest {
         // then
         assertThat(result.totalCommits).isEqualTo(100)
         assertThat(result.lastMonthCommits).isEqualTo(25)
-        
+
         // Total bytes = 1500
         // Kotlin: 1000/1500 = 66.6%
         // Java: 500/1500 = 33.3%
-        
+
         val kotlinStat = result.languages.find { it.name == "Kotlin" }
         val javaStat = result.languages.find { it.name == "Java" }
-        
+
         assertThat(kotlinStat).isNotNull
         assertThat(javaStat).isNotNull
-        
+
         // Assert percentage ranges
         assertThat(kotlinStat?.percentage).isGreaterThan(60.0)
         assertThat(javaStat?.percentage).isLessThan(40.0)
@@ -82,11 +81,17 @@ class StatsServiceTest {
                 )
             )
         )
-        val user = GraphqlUser("Test User", "testuser", GraphqlRepoConnection(listOf(repo1)))
-        
-        `when`(githubClient.fetchUserAndReposGraphQL(username, false)).thenReturn(user)
-        `when`(githubClient.searchIssues(org.mockito.ArgumentMatchers.anyString())).thenReturn(0)
-        `when`(githubClient.searchCommits(org.mockito.ArgumentMatchers.anyString())).thenReturn(0)
+
+        val rawStats = RawGithubStats(
+            name = "Test User",
+            repos = listOf(repo1),
+            totalIssues = 0,
+            totalPRs = 0,
+            totalCommits = 0,
+            lastMonthCommits = 0
+        )
+
+        `when`(rawStatsFetcher.fetch(username, false)).thenReturn(rawStats)
 
         // when
         // Hide "html" (case-insensitive check needed)
