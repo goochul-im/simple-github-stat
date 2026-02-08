@@ -132,4 +132,7 @@
             </g>
         </g>
     </g>
+
+    <!-- Credit -->
+    <text x="15" y="270" style="font: 400 10px 'Segoe UI', Ubuntu, Sans-Serif; fill: #fff;">made by goochul-im</text>
 </svg>
